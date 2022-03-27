@@ -1,0 +1,24 @@
+let $thr1=`select connection_id()`;
+connect (con1, localhost, root,,);
+connection con1;
+let $thr2=`select connection_id()`;
+SET @old_debug= @@session.debug;
+connection default; 
+
+
+connection con1;
+set @show_explain_probe_query= 'SELECT * FROM sys.waits_by_user_by_latency';
+SET debug_dbug='+d,notify_item_objects_about_to_be_freed_debug_sync';
+send
+    SELECT * FROM sys.waits_by_user_by_latency;
+connection default;
+let $wait_condition= select State='show_explain_trap' from information_schema.processlist where id=$thr2;
+--source include/wait_condition.inc
+evalp show analyze format=JSON for $thr2;
+
+connection con1;
+reap;
+SET debug_dbug=@old_debug;
+
+# Cleanup
+disconnect con1

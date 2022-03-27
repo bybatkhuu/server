@@ -2241,6 +2241,16 @@ void THD::cleanup_after_query()
 
   thd_progress_end(this);
 
+  if (lex && lex->explain)
+    lex->explain->notify_item_objects_about_to_be_freed();
+
+  DBUG_EXECUTE_IF("notify_item_objects_about_to_be_freed_debug_sync",
+                  if (dbug_user_var_equals_str(
+                      this, "show_explain_probe_query",
+                      query()))
+                    dbug_serve_apcs(this, 1);
+                  );
+
   /*
     Reset rand_used so that detection of calls to rand() will save random 
     seeds if needed by the slave.
