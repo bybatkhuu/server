@@ -939,7 +939,7 @@ parse_page(
 				index.total_data_bytes += data_bytes;
 				index.pages_in_size_range[size_range_id] ++;
 			}
-		} else {
+		} else if (page_dump_filename) {
 			fprintf(file, "#::" UINT32PF "\t\t|\t\tEncrypted Index page\t\t\t|"
 				"\tkey_version " UINT32PF ",%s\n", cur_page_num, key_version, str);
 		}
